@@ -17,7 +17,6 @@ export const verifyToken = async (req, res, next) => {
         attributes: [
           "id",
           "username",
-          "employee_id",
           "email",
           "role",
           "phone_number",
