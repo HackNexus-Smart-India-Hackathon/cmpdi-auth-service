@@ -27,7 +27,7 @@ export const verifyToken = async (req, res, next) => {
       next();
     } catch (error) {
       console.error("Error during token verification or user fetching:", error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      res.status(401).json({ message: error.name==="TokenExpiredError"?error.name:"Not authorized, token failed" });
     }
   } else {
     res.status(401).json({ message: "Not authorized, no token" });
