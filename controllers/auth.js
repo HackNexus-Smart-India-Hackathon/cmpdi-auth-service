@@ -35,12 +35,12 @@ async function verifyPassword(password, hashedPassword) {
 
 export const register = async (req, res) => {
   try {
-    const { password_hash, ...userData } = req.body;
-    const hashedPassword = await encryptPassword(password_hash);
-    console.log(hashedPassword);
+    const { password, ...userData } = req.body;
+    const password_hash = await encryptPassword(password);
+    // console.log(hashedPassword);
     const user = await User.create({
       ...userData,
-      password_hash: hashedPassword,
+      password_hash,
     });
     delete user.dataValues.password_hash;
     delete user.dataValues.password_reset_token;
@@ -60,11 +60,11 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { employee_id, password } = req.body;
-    const user = await User.findOne({ where: { employee_id } });
+    const { username, password } = req.body;
+    const user = await User.findOne({ where: { username } });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid employee_id" });
+      return res.status(401).json({ error: "Invalid username" });
     }
 
     const isPasswordValid = await verifyPassword(password, user.password_hash);
@@ -111,6 +111,8 @@ export const refreshToken = async (req, res) => {
   try {
     jwt.verify(refreshToken, process.env.REFRESH_SECRET);
     const { employee, id } = jwt.decode(refreshToken);
+    console.log(employee, id);
+    
     const accessToken = jwt.sign({ employee, id }, process.env.ACCESS_SECRET, {
       expiresIn: "15m",
     });
@@ -123,14 +125,7 @@ export const refreshToken = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: [
-        "id",
-        "username",
-        "employee_id",
-        "email",
-        "role",
-        "phone_number",
-      ],
+      attributes: ["id", "username", "email", "role", "phone_number"],
     });
     res.status(200).json(users);
   } catch (error) {
@@ -143,14 +138,7 @@ export const getUserByRole = async (req, res) => {
     const { role } = req.params;
     const users = await User.findAll({
       where: { role },
-      attributes: [
-        "id",
-        "username",
-        "employee_id",
-        "email",
-        "role",
-        "phone_number",
-      ],
+      attributes: ["id", "username", "email", "role", "phone_number"],
     });
     res.status(200).json(users);
   } catch (error) {
@@ -162,14 +150,7 @@ export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id, {
-      attributes: [
-        "id",
-        "username",
-        "employee_id",
-        "email",
-        "role",
-        "phone_number",
-      ],
+      attributes: ["id", "username", "email", "role", "phone_number"],
     });
     if (user) {
       res.status(200).json(user);
@@ -189,14 +170,7 @@ export const updateUser = async (req, res) => {
     });
     if (updated) {
       const updatedUser = await User.findByPk(id, {
-        attributes: [
-          "id",
-          "username",
-          "employee_id",
-          "email",
-          "role",
-          "phone_number",
-        ],
+        attributes: ["id", "username", "email", "role", "phone_number"],
       });
       res.status(200).json({ user: updatedUser });
     } else {

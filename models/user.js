@@ -14,11 +14,6 @@ const User = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    employee_id: {
-      type: DataTypes.STRING,
-      unique: true,
-      allowNull: false,
-    },
     email: {
       type: DataTypes.STRING,
       unique: true,
