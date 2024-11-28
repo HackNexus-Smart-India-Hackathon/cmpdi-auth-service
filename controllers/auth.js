@@ -47,7 +47,27 @@ export const register = async (req, res) => {
     delete user.dataValues.password_reset_expires;
     delete user.dataValues.two_factor_secret;
     delete user.dataValues.two_factor_enabled;
-    res.status(201).json(user);
+
+    const temp = { phone: user.phone_number, id: user.id };
+    const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(temp, process.env.REFRESH_SECRET);
+
+    await RefreshToken.create({
+      token: refreshToken,
+      user_id: user.id,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    const token = accessToken;
+    res.status(201).json({user, token});
   } catch (error) {
     res.status(500).json({
       error:
@@ -60,11 +80,11 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ where: { username } });
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(401).json({ error: "Invalid username" });
+      return res.status(401).json({ error: "Invalid email" });
     }
 
     const isPasswordValid = await verifyPassword(password, user.password_hash);
@@ -77,7 +97,7 @@ export const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid password" });
     }
-    const temp = { employee: user.phone_number, id: user.id };
+    const temp = { phone: user.phone_number, id: user.id };
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
       expiresIn: "15m",
     });
@@ -88,8 +108,14 @@ export const login = async (req, res) => {
       user_id: user.id,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
-    const token = { accessToken, refreshToken };
+    const token = accessToken;
     res.status(200).json({ message: "Login successful", user, token });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -97,7 +123,7 @@ export const login = async (req, res) => {
 };
 
 export const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
     return res.status(400).json({ error: "Refresh token is required" });
   }
@@ -110,10 +136,10 @@ export const refreshToken = async (req, res) => {
   }
   try {
     jwt.verify(refreshToken, process.env.REFRESH_SECRET);
-    const { employee, id } = jwt.decode(refreshToken);
-    console.log(employee, id);
-    
-    const accessToken = jwt.sign({ employee, id }, process.env.ACCESS_SECRET, {
+    const { phone, id } = jwt.decode(refreshToken);
+    console.log(phone, id);
+
+    const accessToken = jwt.sign({ phone, id }, process.env.ACCESS_SECRET, {
       expiresIn: "15m",
     });
     res.status(200).json({ accessToken });

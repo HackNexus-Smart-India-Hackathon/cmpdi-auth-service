@@ -4,15 +4,32 @@ import User from "../models/user.js";
 
 export const generateSecret = async (req, res) => {
   try {
-    const secret = speakeasy.generateSecret({ length: 20 });
     const { id } = req.params;
-    const [updated] = await User.update(
-      { two_factor_secret: secret.base32 },
-      {
-        where: { id: id },
-      }
-    );
-    QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+    const check = await User.findByPk(id, {
+      attributes: ["two_factor_enabled", "two_factor_secret", "username"],
+    });
+
+    let secret;
+    if (check.two_factor_secret) {
+      secret = { base32: check.two_factor_secret };
+    } else {
+      secret = speakeasy.generateSecret({ length: 20 });
+      await User.update(
+        { two_factor_secret: secret.base32, two_factor_enabled: true },
+        { where: { id: id } }
+      );
+    }
+console.log(secret.base32);
+
+    const otpauthUrl = speakeasy.otpauthURL({
+      encoding: "base32",
+      type: "totp",
+      secret: secret.base32,
+      label: encodeURIComponent(`C.M.P.D.I:${check.username}`), // Ensure special characters are encoded
+      issuer: "C.M.P.D.I",
+    });
+
+    QRCode.toDataURL(otpauthUrl, (err, data_url) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: "Error generating QR code" });
@@ -27,7 +44,6 @@ export const generateSecret = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 export const verify2FA = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -45,6 +61,8 @@ export const verify2FA = async (req, res, next) => {
     if (verified) {
       res.json({ message: "2FA verification successful" });
     } else {
+      console.log(scr,token,verified);
+      
       res.status(401).json({ message: "Invalid 2FA token" });
     }
   } catch (error) {
