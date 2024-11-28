@@ -1,14 +1,19 @@
 import express from 'express';
 import User from './models/user.js';
 import RefreshToken from './models/refreshtoken.js';
+import cookieParser from 'cookie-parser';
 import { sequelize } from './config/db.js';
 import authRoutes from './routes/routes.js';
 import dotenv from "dotenv";
 import cors from "cors";
 dotenv.config();
 const app = express();
-
-app.use(cors());
+const corsOptions = {
+  origin: ["http://localhost:3000", "http://example.com"], // Replace with your frontend URLs
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+};
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 
 const PORT = process.env.PORT || 8000;
