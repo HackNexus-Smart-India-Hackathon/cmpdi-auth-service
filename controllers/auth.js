@@ -93,11 +93,19 @@ export const login = async (req, res) => {
     delete user.dataValues.password_reset_expires;
     delete user.dataValues.two_factor_secret;
     delete user.dataValues.two_factor_enabled;
-
+    
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid password" });
     }
     const temp = { phone: user.phone_number, id: user.id };
+    const user_chat_id =await axios("lcoalhost:8000/userDetails" ,{
+      email
+    })
+    if(user_chat_id.error){
+      console.log("error retrieving user")
+      return res.error({error : user_chat_id.error})
+    }
+    
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
       expiresIn: "15m",
     });
@@ -108,6 +116,7 @@ export const login = async (req, res) => {
       user_id: user.id,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
@@ -116,7 +125,7 @@ export const login = async (req, res) => {
     });
 
     const token = accessToken;
-    res.status(200).json({ message: "Login successful", user, token });
+    res.status(200).json({ message: "Login successful", user, token ,user_chat_id});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
