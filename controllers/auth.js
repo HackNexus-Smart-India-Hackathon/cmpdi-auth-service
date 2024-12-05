@@ -3,6 +3,7 @@ import RefreshToken from "../models/refreshtoken.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import axios from "axios";
 dotenv.config();
 
 async function encryptPassword(password) {
@@ -67,7 +68,7 @@ export const register = async (req, res) => {
     });
 
     const token = accessToken;
-    res.status(201).json({user, token});
+    res.status(201).json({ user, token });
   } catch (error) {
     res.status(500).json({
       error:
@@ -93,19 +94,26 @@ export const login = async (req, res) => {
     delete user.dataValues.password_reset_expires;
     delete user.dataValues.two_factor_secret;
     delete user.dataValues.two_factor_enabled;
-    
+
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid password" });
     }
     const temp = { phone: user.phone_number, id: user.id };
-    const user_chat_id =await axios("lcoalhost:8000/userDetails" ,{
-      email
-    })
-    if(user_chat_id.error){
-      console.log("error retrieving user")
-      return res.error({error : user_chat_id.error})
+    let user_chat_id;
+    try {
+      user_chat_id = await axios.post("http://localhost:8000/userDetails", {
+        email,
+      });
+    } catch (error) {
+      console.error("Error retrieving user chat ID:", error);
+      return res.status(500).json({ error: "Error retrieving user chat ID" });
     }
-    
+    console.log(user_chat_id.data);
+    if (user_chat_id.data.error) {
+      console.log("error retrieving user");
+      return res.status(500).json({ error: user_chat_id.data.error });
+    }
+
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
       expiresIn: "15m",
     });
@@ -125,9 +133,14 @@ export const login = async (req, res) => {
     });
 
     const token = accessToken;
-    res.status(200).json({ message: "Login successful", user, token ,chat:user_chat_id});
+    res.status(200).json({
+      message: "Login successful",
+      user,
+      token,
+      chat: user_chat_id.data,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error });
   }
 };
 
