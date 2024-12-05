@@ -125,7 +125,7 @@ export const login = async (req, res) => {
     });
 
     const token = accessToken;
-    res.status(200).json({ message: "Login successful", user, token ,user_chat_id});
+    res.status(200).json({ message: "Login successful", user, token ,chat:user_chat_id});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
