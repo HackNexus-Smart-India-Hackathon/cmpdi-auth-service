@@ -6,6 +6,7 @@ import { sequelize } from './config/db.js';
 import authRoutes from './routes/routes.js';
 import dotenv from "dotenv";
 import cors from "cors";
+import chatRoutes from './routes/chatRoutes.js'
 dotenv.config();
 const app = express();
 const corsOptions = {
@@ -23,7 +24,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRoutes);
-
+app.use('/chat' ,chatRoutes)
 sequelize
   .sync()
   .then(() => {

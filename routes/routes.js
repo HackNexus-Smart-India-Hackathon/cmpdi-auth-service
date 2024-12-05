@@ -1,9 +1,9 @@
-import expres from 'express';
+import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { register, login,refreshToken,getAllUsers,getUserByRole,getUserById,updateUser,deleteUser } from "../controllers/auth.js";
 import { generateSecret,verify2FA } from '../controllers/auth2fa.js';
 
-const router = expres.Router();
+const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
