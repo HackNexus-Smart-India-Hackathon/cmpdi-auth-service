@@ -21,9 +21,9 @@ router.post('/message' , async (req , res)=>{
         res.status(404).json({error : "Internal Server error"})
     }
 })
-router.get('/chats' , (req,res)=>{
+router.post('/chats' , (req,res)=>{
     const {user_id} = req.body;
-    axios.get('localhost:8000/chats' , {
+    axios.post('http://localhost:8000/chats' , {
         user_id
     })
     .then(msg =>{
@@ -37,9 +37,9 @@ router.get('/chats' , (req,res)=>{
     })
 })
 
-router.get('/getPrevChat' , (req ,res)=>{
+router.post('/getPrevChat' , (req ,res)=>{
     const {chat_id} = req.body;
-    axios.get('localhost:8000/getPrevChat' <{
+    axios.post('http://localhost:8000/getPrevChat' <{
         chat_id
     })
     .then(msg=>{
