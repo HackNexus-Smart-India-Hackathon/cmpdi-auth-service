@@ -39,18 +39,18 @@ router.post('/chats' , (req,res)=>{
 
 router.post('/getPrevChat' , (req ,res)=>{
     const {chat_id} = req.body;
-    axios.post('http://localhost:8000/getPrevChat' <{
-        chat_id
-    })
-    .then(msg=>{
-        if(msg.data.error)
-            return res.json({error : msg.data.error})
-        return res.status(200).json({messges: msg.data.data})
-    })
-    .catch(error => {
-        console.error(error)
-        return res.status(404).json({error})
-    })
+    axios
+      .post("http://localhost:8000/getPrevChat", {
+        chat_id,
+      })
+      .then((msg) => {
+        if (msg.data.error) return res.json({ error: msg.data.error });
+        return res.status(200).json({ messages: msg.data.data });
+      })
+      .catch((error) => {
+        console.error(error);
+        return res.status(404).json({ error });
+      });
 })
 
 export default router
