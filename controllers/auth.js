@@ -79,6 +79,18 @@ export const register = async (req, res) => {
   }
 };
 
+const getProject = async (email) => {
+  try {
+    const project = await axios.get(
+      `${process.env.PROJECT_ROUTE}/api/projects/investigator/projects?email=${email}`
+    );
+    return project.data.data[0];
+  } catch (error) {
+    console.error("Error retrieving project:", error);
+    return null;
+  }
+};
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -112,6 +124,15 @@ export const login = async (req, res) => {
     if (user_chat_id.data.error) {
       console.log("error retrieving user");
       return res.status(500).json({ error: user_chat_id.data.error });
+    }
+
+    if (user.role === "investigator") {
+      const project = await getProject(email);
+      console.log(project);
+
+      if (project) {
+        user.dataValues.project = project;
+      }
     }
 
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
