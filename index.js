@@ -10,7 +10,7 @@ import chatRoutes from './routes/chatRoutes.js'
 dotenv.config();
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://example.com"], // Replace with your frontend URLs
+  origin: [`${process.env.FRONTEND_ROUTE}`, "http://example.com"], // Replace with your frontend URLs
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 };
 app.use(cors(corsOptions));
