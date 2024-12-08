@@ -11,7 +11,7 @@ router.post('/refresh-token', refreshToken);
 router.get('/users', verifyToken, getAllUsers);
 router.get("/users/:role", verifyToken, getUserByRole);
 router.get("/user/:id", verifyToken, getUserById);
-router.put("/user/:id", verifyToken, updateUser);
+router.put("/user/:id", updateUser);
 router.delete("/user/:id", verifyToken, deleteUser);
 
 //2FA
