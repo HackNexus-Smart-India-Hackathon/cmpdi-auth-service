@@ -51,7 +51,7 @@ export const register = async (req, res) => {
 
     const temp = { phone: user.phone_number, id: user.id };
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
-      expiresIn: "15m",
+       
     });
     const refreshToken = jwt.sign(temp, process.env.REFRESH_SECRET);
 
@@ -136,7 +136,7 @@ export const login = async (req, res) => {
     }
 
     const accessToken = jwt.sign(temp, process.env.ACCESS_SECRET, {
-      expiresIn: "15m",
+       
     });
     const refreshToken = jwt.sign(temp, process.env.REFRESH_SECRET);
 
@@ -183,7 +183,7 @@ export const refreshToken = async (req, res) => {
     console.log(phone, id);
 
     const accessToken = jwt.sign({ phone, id }, process.env.ACCESS_SECRET, {
-      expiresIn: "15m",
+       
     });
     res.status(200).json({ accessToken });
   } catch (error) {
